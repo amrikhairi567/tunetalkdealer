@@ -1,0 +1,42 @@
+{% extends "admin_base.html" %}
+{% block content %}
+<div class="page-head"><h1>Dealer</h1></div>
+<div class="table-wrap">
+  <table>
+    <tr><th>Nama</th><th>E-mel</th><th>Lokasi</th><th>Dirujuk oleh</th><th>Jumlah Rujukan</th><th>Kadar Komisen</th><th>Status</th><th></th></tr>
+    {% for d in dealers %}
+    <tr>
+      <td><a href="{{ url_for('dealer_salespage', slug=d.slug) }}" target="_blank">{{ d.name }}</a></td>
+      <td class="small">{{ d.email }}</td>
+      <td class="small">{% if d.latitude and d.longitude %}<span class="pill pill-active">Set</span>{% else %}<span class="pill pill-suspended">Belum</span>{% endif %}</td>
+      <td class="small">{{ d.referred_by_name or '-' }}</td>
+      <td>{{ d.referral_count }}</td>
+      <td>
+        <form class="inline-form" method="post" action="{{ url_for('admin_dealer_rate', dealer_id=d.id) }}">
+          <input type="number" step="0.1" name="commission_rate" value="{{ d.commission_rate if d.commission_rate is not none else '' }}"
+                 placeholder="lalai" style="width:70px;padding:4px 6px;border:1px solid var(--border);border-radius:6px;">
+          <button class="btn btn-secondary btn-small" type="submit">Set %</button>
+        </form>
+      </td>
+      <td><span class="pill pill-{{ d.status }}">{{ d.status }}</span></td>
+      <td class="action-row">
+        {% if d.status != 'active' %}
+        <form class="inline-form" method="post" action="{{ url_for('admin_dealer_status', dealer_id=d.id) }}">
+          <input type="hidden" name="status" value="active">
+          <button class="btn btn-small" style="background:var(--green);color:#fff;" type="submit">Aktifkan</button>
+        </form>
+        {% endif %}
+        {% if d.status != 'suspended' %}
+        <form class="inline-form" method="post" action="{{ url_for('admin_dealer_status', dealer_id=d.id) }}">
+          <input type="hidden" name="status" value="suspended">
+          <button class="btn btn-danger btn-small" type="submit">Gantung</button>
+        </form>
+        {% endif %}
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="8" class="empty-state">Belum ada dealer berdaftar.</td></tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}{{ dealer.name }} — Dealer Tunetalk{% endblock %}
+{% block content %}
+<div class="dealer-hero">
+  <div class="wrap">
+    <div class="dealer-avatar">{{ dealer.name[:1]|upper }}</div>
+    <h1 style="margin:0;">{{ dealer.name }}</h1>
+    <p style="opacity:0.9;">Dealer Rasmi {{ settings.company_name }} {% if dealer.state %}&middot; {{ dealer.state }}{% endif %}</p>
+    {% if dealer.bio %}<p style="max-width:520px;margin:12px auto 0;opacity:0.95;">{{ dealer.bio }}</p>{% endif %}
+    <div class="contact-row">
+      {% if dealer.whatsapp %}
+      <a class="btn btn-primary" href="https://wa.me/{{ dealer.whatsapp|replace('+','')|replace(' ','')|replace('-','') }}" target="_blank">WhatsApp Saya</a>
+      {% endif %}
+      <a class="btn btn-outline" href="tel:{{ dealer.phone }}">Telefon: {{ dealer.phone }}</a>
+    </div>
+  </div>
+</div>
+
+<section>
+  <div class="wrap">
+    <div class="referral-box">
+      Nak jadi dealer Tunetalk juga? Daftar melalui link {{ dealer.name }} dan mula dapat komisen rujukan sendiri.
+      <br><a class="btn btn-primary btn-small" style="margin-top:10px;" href="{{ url_for('dealer_register', ref=dealer.slug) }}">Daftar Melalui {{ dealer.name }}</a>
+    </div>
+
+    {% if promos %}
+    <div class="section-title" style="margin-top:30px;">Promosi Terkini</div>
+    <p class="section-sub">Info ini dikemaskini terus oleh laman induk dan sentiasa terkini di sini.</p>
+    <div class="grid grid-3">
+      {% for p in promos %}
+      <div class="card pkg-card">
+        <span class="badge">Promo</span>
+        <div class="cat">{{ p.category|upper }}</div>
+        <h3 class="mt-0">{{ p.title }}</h3>
+        <div class="price">RM{{ '%.2f'|format(p.price) }}</div>
+        <div class="meta">{{ p.data_quota }} {% if p.validity %}&middot; {{ p.validity }}{% endif %}</div>
+        <p class="small">{{ p.description }}</p>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="section-title" style="margin-top:30px;">Semua Pakej</div>
+    <div class="grid grid-3">
+      {% for p in packages %}
+      <div class="card pkg-card">
+        {% if p.is_promo %}<span class="badge">Promo</span>{% endif %}
+        <div class="cat">{{ p.category|upper }}</div>
+        <h3 class="mt-0">{{ p.title }}</h3>
+        <div class="price">RM{{ '%.2f'|format(p.price) }}</div>
+        <div class="meta">{{ p.data_quota }} {% if p.validity %}&middot; {{ p.validity }}{% endif %}</div>
+        <p class="small">{{ p.description }}</p>
+        {% if dealer.whatsapp %}
+        <a class="btn btn-primary btn-small btn-block" style="margin-top:10px;" href="https://wa.me/{{ dealer.whatsapp|replace('+','')|replace(' ','')|replace('-','') }}?text=Hai%20{{ dealer.name|urlencode }}%2C%20saya%20berminat%20dengan%20{{ p.title|urlencode }}" target="_blank">Tanya via WhatsApp</a>
+        {% endif %}
+      </div>
+      {% else %}
+      <p class="muted">Belum ada pakej ditambah oleh admin lagi.</p>
+      {% endfor %}
+    </div>
+
+    <p class="small muted" style="margin-top:24px;">{{ referral_count }} dealer telah menyertai rangkaian melalui {{ dealer.name }}.</p>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Halaman Tidak Dijumpai{% endblock %}
+{% block content %}
+<section>
+  <div class="wrap" style="text-align:center;padding:60px 0;">
+    <h1>404</h1>
+    <p class="muted">Halaman atau salespage dealer ini tidak wujud atau sudah tidak aktif.</p>
+    <a class="btn btn-primary" href="{{ url_for('home') }}">Kembali ke Laman Utama</a>
+  </div>
+</section>
+{% endblock %}

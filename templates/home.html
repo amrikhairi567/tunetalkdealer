@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+{% block title %}{{ settings.company_name }} — Maklumat & Pakej Terkini{% endblock %}
+{% block content %}
+<div class="hero">
+  <div class="wrap">
+    <h1>{{ settings.company_tagline }}</h1>
+    <p class="lead">{{ settings.company_about }}</p>
+    <div class="cta-row">
+      <a class="btn btn-primary" href="{{ url_for('dealer_register') }}">Daftar Jadi Dealer</a>
+      <a class="btn btn-outline" href="{{ url_for('packages_page') }}">Lihat Semua Pakej</a>
+    </div>
+  </div>
+</div>
+
+<section id="lokasi-dealer-section" style="display:none;">
+  <div class="wrap">
+    <div class="section-title">📍 Dealer Terdekat Anda</div>
+    <p class="section-sub" id="lokasiStatus">Mencari dealer berdekatan lokasi anda...</p>
+    <div class="grid grid-3" id="nearestDealerGrid"></div>
+  </div>
+</section>
+<script>
+  (function () {
+    const section = document.getElementById('lokasi-dealer-section');
+    const statusEl = document.getElementById('lokasiStatus');
+    const gridEl = document.getElementById('nearestDealerGrid');
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(function (pos) {
+      const lat = pos.coords.latitude, lng = pos.coords.longitude;
+      fetch('/api/dealer-terdekat?lat=' + lat + '&lng=' + lng)
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (!data.dealers || data.dealers.length === 0) return;
+          section.style.display = '';
+          statusEl.textContent = 'Berdasarkan lokasi anda sekarang — dealer paling hampir:';
+          gridEl.innerHTML = data.dealers.map(function (d) {
+            return '<a class="card" href="/d/' + d.slug + '" style="display:block;">' +
+              '<strong>' + d.name + '</strong><br>' +
+              '<span class="muted small">' + (d.state || 'Malaysia') + ' &middot; ' + d.distance_km + ' km dari anda</span><br>' +
+              '<span class="small">Lihat salespage &rarr;</span></a>';
+          }).join('');
+        })
+        .catch(function () {});
+    }, function () { /* kebenaran ditolak / gagal — kekal senyap, guna fallback "Dealer Rasmi Terkini" di bawah */ },
+    { timeout: 8000 });
+  })();
+</script>
+
+<section>
+  <div class="wrap">
+    <div class="section-title">Cara Program Rujukan Dealer Berfungsi</div>
+    <p class="section-sub">Sekali daftar, salespage sendiri terus aktif — kongsi link, dapat komisen automatik.</p>
+    <div class="grid grid-3">
+      <div class="card">
+        <div class="cat">Langkah 1</div>
+        <h3 class="mt-0">Daftar jadi dealer</h3>
+        <p class="muted small">Isi nama & maklumat contact anda. Salespage peribadi (contoh: /d/nama-anda) terus dijana.</p>
+      </div>
+      <div class="card">
+        <div class="cat">Langkah 2</div>
+        <h3 class="mt-0">Kongsi link rujukan</h3>
+        <p class="muted small">Setiap dealer ada link rujukan unik. Kongsi kepada bakal dealer lain melalui WhatsApp/social media.</p>
+      </div>
+      <div class="card">
+        <div class="cat">Langkah 3</div>
+        <h3 class="mt-0">Dapat komisen automatik</h3>
+        <p class="muted small">Bila dealer baru daftar guna link anda, komisen peratusan terus dikira dalam papan pemuka anda.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% if promos %}
+<section style="background:#fff;border-top:1px solid #eee;border-bottom:1px solid #eee;">
+  <div class="wrap">
+    <div class="section-title">Promosi Terkini</div>
+    <p class="section-sub">Dikemaskini terus oleh laman induk — auto-muncul di semua salespage dealer.</p>
+    <div class="grid grid-3">
+      {% for p in promos %}
+      <div class="card pkg-card">
+        <span class="badge">Promo</span>
+        <div class="cat">{{ p.category|upper }}</div>
+        <h3 class="mt-0">{{ p.title }}</h3>
+        <div class="price">RM{{ '%.2f'|format(p.price) }}</div>
+        <div class="meta">{{ p.data_quota }} {% if p.validity %}&middot; {{ p.validity }}{% endif %}</div>
+        <p class="small">{{ p.description }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<section>
+  <div class="wrap">
+    <div class="section-title">Pakej Popular</div>
+    <p class="section-sub">Info terkini terus dari laman induk.</p>
+    <div class="grid grid-3">
+      {% for p in packages[:6] %}
+      <div class="card pkg-card">
+        {% if p.is_promo %}<span class="badge">Promo</span>{% endif %}
+        <div class="cat">{{ p.category|upper }}</div>
+        <h3 class="mt-0">{{ p.title }}</h3>
+        <div class="price">RM{{ '%.2f'|format(p.price) }}</div>
+        <div class="meta">{{ p.data_quota }} {% if p.validity %}&middot; {{ p.validity }}{% endif %}</div>
+        <p class="small">{{ p.description }}</p>
+      </div>
+      {% else %}
+      <p class="muted">Belum ada pakej ditambah oleh admin lagi.</p>
+      {% endfor %}
+    </div>
+    {% if packages|length > 6 %}
+      <p style="margin-top:16px;"><a href="{{ url_for('packages_page') }}">Lihat semua pakej &rarr;</a></p>
+    {% endif %}
+  </div>
+</section>
+
+{% if top_dealers %}
+<section style="background:#fff;border-top:1px solid #eee;">
+  <div class="wrap">
+    <div class="section-title">Dealer Rasmi Terkini</div>
+    <p class="section-sub">Ini dipaparkan sekiranya lokasi anda tidak dikesan di atas.</p>
+    <div class="grid grid-3">
+      {% for d in top_dealers %}
+      <a class="card" href="{{ url_for('dealer_salespage', slug=d.slug) }}" style="display:block;">
+        <strong>{{ d.name }}</strong><br>
+        <span class="muted small">{{ d.state or 'Malaysia' }} &middot; Lihat salespage &rarr;</span>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<section style="background:#faf7ff;border-top:1px solid #eee;">
+  <div class="wrap">
+    <div class="section-title">Soalan Lazim</div>
+    <div class="grid grid-2">
+      <div class="card">
+        <h3 class="mt-0">Macam mana nak tambah nilai (top-up)?</h3>
+        <p class="small muted">Boleh tambah nilai melalui aplikasi rasmi, e-wallet, Shopee, perbankan internet, atau walk-in di kedai berdekatan.</p>
+      </div>
+      <div class="card">
+        <h3 class="mt-0">Individu blacklist boleh daftar SIM prabayar?</h3>
+        <p class="small muted">Boleh — perkhidmatan prabayar Tune Talk tiada sekatan rekod kredit.</p>
+      </div>
+      <div class="card">
+        <h3 class="mt-0">Boleh bawa nombor lama masuk (number portability)?</h3>
+        <p class="small muted">Boleh, melalui kempen "Switch to Tune Talk" — proses mengambil masa 1-3 hari dengan pengesahan SMS.</p>
+      </div>
+      <div class="card">
+        <h3 class="mt-0">Liputan rangkaian macam mana?</h3>
+        <p class="small muted">Liputan 5G & 4G meluas di seluruh Malaysia, internet lebih stabil untuk streaming dan kerja harian.</p>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

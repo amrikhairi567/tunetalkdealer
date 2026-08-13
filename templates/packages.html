@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Semua Pakej — {{ settings.company_name }}{% endblock %}
+{% block content %}
+<section>
+  <div class="wrap">
+    <div class="section-title">Semua Pakej Tunetalk</div>
+    <p class="section-sub">Senarai ini dikemaskini terus oleh laman induk dan sentiasa terkini.</p>
+    <div class="grid grid-3">
+      {% for p in packages %}
+      <div class="card pkg-card">
+        {% if p.is_promo %}<span class="badge">Promo</span>{% endif %}
+        <div class="cat">{{ p.category|upper }}</div>
+        <h3 class="mt-0">{{ p.title }}</h3>
+        <div class="price">RM{{ '%.2f'|format(p.price) }}</div>
+        <div class="meta">{{ p.data_quota }} {% if p.validity %}&middot; {{ p.validity }}{% endif %}</div>
+        <p class="small">{{ p.description }}</p>
+      </div>
+      {% else %}
+      <p class="muted">Belum ada pakej ditambah oleh admin lagi.</p>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

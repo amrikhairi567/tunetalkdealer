@@ -1,0 +1,42 @@
+{% extends "admin_base.html" %}
+{% block content %}
+<div class="page-head"><h1>Ringkasan</h1></div>
+<div class="stat-row">
+  <div class="stat-tile"><div class="label">Jumlah Dealer</div><div class="value">{{ counts.dealers }}</div></div>
+  <div class="stat-tile"><div class="label">Dealer Aktif</div><div class="value">{{ counts.active_dealers }}</div></div>
+  <div class="stat-tile"><div class="label">Pakej Aktif</div><div class="value">{{ counts.packages }}</div></div>
+  <div class="stat-tile"><div class="label">Permohonan Bayaran Tertangguh</div><div class="value">{{ counts.pending_payouts }}</div></div>
+  <div class="stat-tile accent"><div class="label">Komisen Menunggu</div><div class="value">RM{{ '%.2f'|format(counts.pending_commission) }}</div></div>
+  <div class="stat-tile accent"><div class="label">Komisen Diluluskan</div><div class="value">RM{{ '%.2f'|format(counts.approved_commission) }}</div></div>
+  <div class="stat-tile"><div class="label">Komisen Telah Dibayar</div><div class="value">RM{{ '%.2f'|format(counts.paid_commission) }}</div></div>
+</div>
+
+<div class="grid grid-2" style="align-items:start;">
+  <div>
+    <h3>Dealer Terbaharu</h3>
+    <div class="table-wrap">
+      <table>
+        <tr><th>Nama</th><th>Status</th><th>Tarikh</th></tr>
+        {% for d in recent_dealers %}
+        <tr><td><a href="{{ url_for('dealer_salespage', slug=d.slug) }}" target="_blank">{{ d.name }}</a></td><td><span class="pill pill-{{ d.status }}">{{ d.status }}</span></td><td>{{ d.created_at }}</td></tr>
+        {% else %}
+        <tr><td colspan="3" class="empty-state">Tiada dealer lagi.</td></tr>
+        {% endfor %}
+      </table>
+    </div>
+  </div>
+  <div>
+    <h3>Top Perujuk</h3>
+    <div class="table-wrap">
+      <table>
+        <tr><th>Nama</th><th>Jumlah Rujukan</th></tr>
+        {% for t in top_referrers %}
+        <tr><td>{{ t.name }}</td><td>{{ t.total }}</td></tr>
+        {% else %}
+        <tr><td colspan="2" class="empty-state">Belum ada rujukan lagi.</td></tr>
+        {% endfor %}
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

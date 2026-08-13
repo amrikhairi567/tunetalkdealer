@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Admin — {{ settings.company_name }}{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="wrap">
+      <a class="brand" href="{{ url_for('admin_dashboard') }}"><span class="dot"></span>{{ settings.company_name }} · Admin</a>
+      <div class="nav-links">
+        <a href="{{ url_for('home') }}" target="_blank">Lihat Laman Awam &rarr;</a>
+        <a href="{{ url_for('admin_logout') }}">Log Keluar</a>
+      </div>
+    </div>
+  </nav>
+  <div class="admin-shell">
+    <aside class="admin-sidebar">
+      <a href="{{ url_for('admin_dashboard') }}" class="{{ 'active' if request.endpoint=='admin_dashboard' }}">Ringkasan</a>
+      <a href="{{ url_for('admin_packages') }}" class="{{ 'active' if request.endpoint and request.endpoint.startswith('admin_package') }}">Pakej Tunetalk</a>
+      <a href="{{ url_for('admin_dealers') }}" class="{{ 'active' if request.endpoint=='admin_dealers' }}">Dealer</a>
+      <a href="{{ url_for('admin_commissions') }}" class="{{ 'active' if request.endpoint=='admin_commissions' }}">Komisen</a>
+      <a href="{{ url_for('admin_payouts') }}" class="{{ 'active' if request.endpoint and request.endpoint.startswith('admin_payout') }}">Bayaran</a>
+      <a href="{{ url_for('admin_settings') }}" class="{{ 'active' if request.endpoint=='admin_settings' }}">Tetapan Laman</a>
+    </aside>
+    <main class="admin-main">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="flash flash-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</body>
+</html>

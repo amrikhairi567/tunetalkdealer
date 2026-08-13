@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Senarai Dealer — {{ settings.company_name }}{% endblock %}
+{% block content %}
+<section>
+  <div class="wrap">
+    <div class="section-title">Senarai Dealer Rasmi</div>
+    <p class="section-sub">Cari dealer berdekatan anda, atau lawat salespage peribadi mereka.</p>
+    <div class="grid grid-3">
+      {% for d in dealers %}
+      <a class="card" href="{{ url_for('dealer_salespage', slug=d.slug) }}" style="display:block;">
+        <strong>{{ d.name }}</strong><br>
+        <span class="muted small">{{ d.state or 'Malaysia' }}</span><br>
+        <span class="small">Lihat salespage &rarr;</span>
+      </a>
+      {% else %}
+      <p class="muted">Belum ada dealer berdaftar.</p>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

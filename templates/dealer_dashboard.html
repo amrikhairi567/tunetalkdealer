@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% block title %}Papan Pemuka Dealer — {{ dealer.name }}{% endblock %}
+{% block content %}
+<section>
+  <div class="wrap">
+    <div class="page-head">
+      <h1>Hai, {{ dealer.name }} 👋</h1>
+      <a class="btn btn-outline" style="color:var(--brand-orange-dark);border-color:var(--brand-orange-dark);" href="{{ url_for('dealer_salespage', slug=dealer.slug) }}" target="_blank">Lihat Salespage Saya &rarr;</a>
+    </div>
+
+    <div class="referral-box">
+      <strong>Link Rujukan Anda</strong> — kongsi link ini, bila dealer baru daftar melalui link anda, anda dapat komisen automatik.
+      <code id="refUrl">{{ referral_url }}</code>
+      <button class="btn btn-secondary btn-small" style="margin-top:10px;" onclick="copyRef()">Salin Link</button>
+      <script>
+        function copyRef(){
+          navigator.clipboard.writeText(document.getElementById('refUrl').innerText);
+          alert('Link rujukan disalin!');
+        }
+      </script>
+    </div>
+
+    <div class="stat-row">
+      <div class="stat-tile"><div class="label">Dealer Dirujuk</div><div class="value">{{ stats.referred_count }}</div></div>
+      <div class="stat-tile accent"><div class="label">Baki Boleh Mohon</div><div class="value">RM{{ '%.2f'|format(stats.available_balance) }}</div></div>
+      <div class="stat-tile"><div class="label">Menunggu Kelulusan</div><div class="value">RM{{ '%.2f'|format(stats.total_pending) }}</div></div>
+      <div class="stat-tile"><div class="label">Jumlah Telah Dibayar</div><div class="value">RM{{ '%.2f'|format(stats.total_paid) }}</div></div>
+    </div>
+
+    <div class="grid grid-2" style="align-items:start;">
+      <div class="card">
+        <h3 class="mt-0">Mohon Bayaran Komisen</h3>
+        <p class="small muted">Baki minimum: RM{{ settings.min_payout_amount }}. Baki boleh mohon sekarang: <strong>RM{{ '%.2f'|format(stats.available_balance) }}</strong></p>
+        <form method="post" action="{{ url_for('dealer_request_payout') }}">
+          <div class="field">
+            <label>Nama Bank</label>
+            <input type="text" name="bank_name" required>
+          </div>
+          <div class="field">
+            <label>Nombor Akaun Bank</label>
+            <input type="text" name="bank_account" required>
+          </div>
+          <button class="btn btn-primary btn-block" type="submit">Mohon Bayaran</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h3 class="mt-0">Kemaskini Profil Salespage</h3>
+        <form method="post" action="{{ url_for('dealer_update_profile') }}">
+          <div class="field">
+            <label>Nombor Telefon</label>
+            <input type="text" name="phone" value="{{ dealer.phone }}">
+          </div>
+          <div class="field">
+            <label>Nombor WhatsApp</label>
+            <input type="text" name="whatsapp" value="{{ dealer.whatsapp or '' }}">
+          </div>
+          <div class="field">
+            <label>Negeri</label>
+            <input type="text" name="state" value="{{ dealer.state or '' }}">
+          </div>
+          <div class="field">
+            <label>Bio Ringkas</label>
+            <textarea name="bio" rows="3">{{ dealer.bio or '' }}</textarea>
+          </div>
+          <div class="field">
+            <label>Lokasi</label>
+            <input type="hidden" name="latitude" id="latitude">
+            <input type="hidden" name="longitude" id="longitude">
+            <button type="button" class="btn btn-secondary btn-small" onclick="kemaskiniLokasi()">📍 Kemaskini Lokasi Semasa</button>
+            <p class="field-hint" id="statusLokasi">
+              {% if dealer.latitude and dealer.longitude %}
+                Lokasi semasa: {{ '%.4f'|format(dealer.latitude) }}, {{ '%.4f'|format(dealer.longitude) }}
+              {% else %}
+                Lokasi belum ditetapkan — anda tidak akan muncul dalam carian "Dealer Terdekat".
+              {% endif %}
+            </p>
+          </div>
+          <button class="btn btn-secondary btn-block" type="submit">Simpan</button>
+        </form>
+        <script>
+          function kemaskiniLokasi() {
+            const status = document.getElementById('statusLokasi');
+            if (!navigator.geolocation) { status.textContent = 'Pelayar tidak menyokong geolocation.'; return; }
+            status.textContent = 'Mendapatkan lokasi...';
+            navigator.geolocation.getCurrentPosition(function (pos) {
+              document.getElementById('latitude').value = pos.coords.latitude;
+              document.getElementById('longitude').value = pos.coords.longitude;
+              status.textContent = 'Lokasi baharu (belum disimpan): ' + pos.coords.latitude.toFixed(4) + ', ' + pos.coords.longitude.toFixed(4) + ' — klik Simpan.';
+            }, function (err) {
+              status.textContent = 'Gagal dapatkan lokasi (' + err.message + ').';
+            }, { enableHighAccuracy: true, timeout: 10000 });
+          }
+        </script>
+      </div>
+    </div>
+
+    <h3>Rekod Permohonan Bayaran</h3>
+    <div class="table-wrap">
+      <table>
+        <tr><th>Tarikh</th><th>Jumlah</th><th>Bank</th><th>Status</th><th>Nota</th></tr>
+        {% for p in payouts %}
+        <tr>
+          <td>{{ p.created_at }}</td>
+          <td>RM{{ '%.2f'|format(p.amount) }}</td>
+          <td>{{ p.bank_name }} &middot; {{ p.bank_account }}</td>
+          <td><span class="pill pill-{{ p.status }}">{{ p.status }}</span></td>
+          <td class="small muted">{{ p.note or '' }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5" class="empty-state">Belum ada permohonan bayaran.</td></tr>
+        {% endfor %}
+      </table>
+    </div>
+
+    <h3>Dealer Yang Anda Rujuk</h3>
+    <div class="table-wrap">
+      <table>
+        <tr><th>Nama</th><th>Status</th><th>Tarikh Daftar</th></tr>
+        {% for r in stats.referred %}
+        <tr>
+          <td>{{ r.name }}</td>
+          <td><span class="pill pill-{{ r.status }}">{{ r.status }}</span></td>
+          <td>{{ r.created_at }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="3" class="empty-state">Belum ada dealer dirujuk. Kongsi link rujukan anda!</td></tr>
+        {% endfor %}
+      </table>
+    </div>
+
+    <h3>Sejarah Komisen</h3>
+    <div class="table-wrap">
+      <table>
+        <tr><th>Tarikh</th><th>Sumber (Dealer Dirujuk)</th><th>Kadar</th><th>Jumlah</th><th>Status</th></tr>
+        {% for c in stats.commissions %}
+        <tr>
+          <td>{{ c.created_at }}</td>
+          <td>{{ c.source_name }}</td>
+          <td>{{ c.rate }}%</td>
+          <td>RM{{ '%.2f'|format(c.amount) }}</td>
+          <td><span class="pill pill-{{ c.status }}">{{ c.status }}</span></td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5" class="empty-state">Belum ada komisen lagi.</td></tr>
+        {% endfor %}
+      </table>
+    </div>
+  </div>
+</section>
+{% endblock %}

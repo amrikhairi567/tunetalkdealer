@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Daftar Jadi Dealer — {{ settings.company_name }}{% endblock %}
+{% block content %}
+<section>
+  <div class="wrap">
+    <div class="card form-card">
+      <h2 class="mt-0">Daftar Jadi Dealer Tunetalk</h2>
+      {% if referrer %}
+        <p class="small muted">Anda dijemput oleh dealer: <strong>{{ referrer.name }}</strong></p>
+      {% endif %}
+      <form method="post">
+        <input type="hidden" name="ref_slug" value="{{ referrer.slug if referrer else request.args.get('ref','') }}">
+        <div class="field">
+          <label>Nama Penuh</label>
+          <input type="text" name="name" value="{{ form.name or '' }}" required>
+        </div>
+        <div class="field">
+          <label>E-mel</label>
+          <input type="email" name="email" value="{{ form.email or '' }}" required>
+        </div>
+        <div class="field">
+          <label>Nombor Telefon</label>
+          <input type="text" name="phone" value="{{ form.phone or '' }}" required>
+        </div>
+        <div class="field">
+          <label>Nombor WhatsApp (jika berbeza)</label>
+          <input type="text" name="whatsapp" value="{{ form.whatsapp or '' }}">
+        </div>
+        <div class="field">
+          <label>Negeri</label>
+          <input type="text" name="state" value="{{ form.state or '' }}">
+        </div>
+        <div class="field">
+          <label>Bio Ringkas (dipaparkan di salespage anda)</label>
+          <textarea name="bio" rows="3">{{ form.bio or '' }}</textarea>
+        </div>
+        <div class="field">
+          <label>Kata Laluan</label>
+          <input type="password" name="password" required minlength="6">
+        </div>
+
+        <div class="field">
+          <label>Lokasi Anda <span style="color:var(--red);">*</span></label>
+          <p class="field-hint" style="margin-top:0;">Wajib — supaya bakal pelanggan/dealer berdekatan boleh jumpa anda melalui carian "Dealer Terdekat" di laman utama.</p>
+          <input type="hidden" name="latitude" id="latitude" value="{{ form.latitude or '' }}">
+          <input type="hidden" name="longitude" id="longitude" value="{{ form.longitude or '' }}">
+          <button type="button" class="btn btn-secondary" id="btnLokasi" onclick="tetapkanLokasi()">📍 Guna Lokasi Semasa</button>
+          <p class="field-hint" id="statusLokasi">
+            {% if form.latitude and form.longitude %}
+              Lokasi ditetapkan ✓ ({{ form.latitude }}, {{ form.longitude }})
+            {% else %}
+              Belum ditetapkan.
+            {% endif %}
+          </p>
+        </div>
+
+        <button class="btn btn-primary btn-block" type="submit">Daftar & Aktifkan Salespage</button>
+      </form>
+      <script>
+        function tetapkanLokasi() {
+          const status = document.getElementById('statusLokasi');
+          if (!navigator.geolocation) {
+            status.textContent = 'Pelayar anda tidak menyokong geolocation. Sila cuba pelayar lain.';
+            return;
+          }
+          status.textContent = 'Mendapatkan lokasi...';
+          navigator.geolocation.getCurrentPosition(function (pos) {
+            document.getElementById('latitude').value = pos.coords.latitude;
+            document.getElementById('longitude').value = pos.coords.longitude;
+            status.textContent = 'Lokasi ditetapkan ✓ (' + pos.coords.latitude.toFixed(4) + ', ' + pos.coords.longitude.toFixed(4) + ')';
+          }, function (err) {
+            status.textContent = 'Gagal dapatkan lokasi — sila benarkan akses lokasi dalam pelayar (' + err.message + ').';
+          }, { enableHighAccuracy: true, timeout: 10000 });
+        }
+      </script>
+      <p class="small muted" style="margin-top:14px;">Sudah ada akaun? <a href="{{ url_for('dealer_login') }}">Log masuk di sini</a></p>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,34 @@
+{% extends "admin_base.html" %}
+{% block content %}
+<div class="page-head"><h1>Komisen</h1></div>
+<p class="muted small">Luluskan komisen 'pending' supaya ia layak dimohon sebagai bayaran oleh dealer.</p>
+<div class="table-wrap">
+  <table>
+    <tr><th>Tarikh</th><th>Dealer (Penerima)</th><th>Dirujuk</th><th>Kadar</th><th>Jumlah</th><th>Status</th><th></th></tr>
+    {% for c in commissions %}
+    <tr>
+      <td class="small">{{ c.created_at }}</td>
+      <td>{{ c.dealer_name }}</td>
+      <td>{{ c.source_name }}</td>
+      <td>{{ c.rate }}%</td>
+      <td>RM{{ '%.2f'|format(c.amount) }}</td>
+      <td><span class="pill pill-{{ c.status }}">{{ c.status }}</span></td>
+      <td class="action-row">
+        {% if c.status == 'pending' %}
+        <form class="inline-form" method="post" action="{{ url_for('admin_commission_status', commission_id=c.id) }}">
+          <input type="hidden" name="status" value="approved">
+          <button class="btn btn-small" style="background:var(--green);color:#fff;" type="submit">Lulus</button>
+        </form>
+        <form class="inline-form" method="post" action="{{ url_for('admin_commission_status', commission_id=c.id) }}">
+          <input type="hidden" name="status" value="rejected">
+          <button class="btn btn-danger btn-small" type="submit">Tolak</button>
+        </form>
+        {% endif %}
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="7" class="empty-state">Belum ada komisen direkodkan.</td></tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "admin_base.html" %}
+{% block content %}
+<div class="page-head"><h1>{{ 'Edit Pakej' if package else 'Tambah Pakej' }}</h1></div>
+<div class="card form-card" style="max-width:520px;">
+  <form method="post">
+    <div class="field">
+      <label>Tajuk Pakej</label>
+      <input type="text" name="title" value="{{ package.title if package else '' }}" required>
+    </div>
+    <div class="field">
+      <label>Kategori</label>
+      <select name="category">
+        {% for c in ['prepaid','postpaid','data','promo'] %}
+        <option value="{{ c }}" {{ 'selected' if package and package.category==c }}>{{ c }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="field">
+      <label>Harga (RM)</label>
+      <input type="number" step="0.01" name="price" value="{{ package.price if package else '' }}" required>
+    </div>
+    <div class="field">
+      <label>Kuota Data</label>
+      <input type="text" name="data_quota" value="{{ package.data_quota if package else '' }}" placeholder="cth: 30GB + 5GB hotspot">
+    </div>
+    <div class="field">
+      <label>Tempoh Sah</label>
+      <input type="text" name="validity" value="{{ package.validity if package else '' }}" placeholder="cth: 30 hari">
+    </div>
+    <div class="field">
+      <label>Keterangan</label>
+      <textarea name="description" rows="3">{{ package.description if package else '' }}</textarea>
+    </div>
+    <div class="field field-check">
+      <input type="checkbox" name="is_promo" id="is_promo" {{ 'checked' if package and package.is_promo }}>
+      <label for="is_promo" style="margin:0;">Tandakan sebagai Promo</label>
+    </div>
+    <div class="field field-check">
+      <input type="checkbox" name="is_active" id="is_active" {{ 'checked' if not package or package.is_active }}>
+      <label for="is_active" style="margin:0;">Aktif / Papar di laman</label>
+    </div>
+    <div class="field">
+      <label>Susunan Paparan (nombor kecil = atas)</label>
+      <input type="number" name="sort_order" value="{{ package.sort_order if package else 0 }}">
+    </div>
+    <button class="btn btn-primary btn-block" type="submit">Simpan</button>
+  </form>
+</div>
+{% endblock %}

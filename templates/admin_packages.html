@@ -1,0 +1,31 @@
+{% extends "admin_base.html" %}
+{% block content %}
+<div class="page-head">
+  <h1>Pakej Tunetalk</h1>
+  <a class="btn btn-primary" href="{{ url_for('admin_package_new') }}">+ Tambah Pakej</a>
+</div>
+<p class="muted small">Sebarang perubahan di sini terus dipaparkan pada laman utama DAN semua salespage dealer — tiada perlu update manual satu-satu.</p>
+<div class="table-wrap">
+  <table>
+    <tr><th>Tajuk</th><th>Kategori</th><th>Harga</th><th>Promo?</th><th>Aktif?</th><th>Kemaskini</th><th></th></tr>
+    {% for p in packages %}
+    <tr>
+      <td>{{ p.title }}</td>
+      <td>{{ p.category }}</td>
+      <td>RM{{ '%.2f'|format(p.price) }}</td>
+      <td>{{ 'Ya' if p.is_promo else '-' }}</td>
+      <td>{{ 'Ya' if p.is_active else 'Tidak' }}</td>
+      <td class="small muted">{{ p.updated_at }}</td>
+      <td class="action-row">
+        <a class="btn btn-secondary btn-small" href="{{ url_for('admin_package_edit', package_id=p.id) }}">Edit</a>
+        <form class="inline-form" method="post" action="{{ url_for('admin_package_delete', package_id=p.id) }}" onsubmit="return confirm('Padam pakej ini?');">
+          <button class="btn btn-danger btn-small" type="submit">Padam</button>
+        </form>
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="7" class="empty-state">Belum ada pakej. Tambah pakej pertama anda.</td></tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

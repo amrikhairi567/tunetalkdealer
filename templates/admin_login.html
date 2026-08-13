@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Log Masuk Admin — {{ settings.company_name }}{% endblock %}
+{% block content %}
+<section>
+  <div class="wrap">
+    <div class="card form-card">
+      <h2 class="mt-0">Log Masuk Admin (Laman Induk)</h2>
+      <form method="post">
+        <div class="field">
+          <label>E-mel</label>
+          <input type="email" name="email" required>
+        </div>
+        <div class="field">
+          <label>Kata Laluan</label>
+          <input type="password" name="password" required>
+        </div>
+        <button class="btn btn-primary btn-block" type="submit">Log Masuk</button>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock %}

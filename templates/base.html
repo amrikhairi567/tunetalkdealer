@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ settings.company_name }}{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="wrap">
+      <a class="brand" href="{{ url_for('home') }}"><span class="dot"></span>{{ settings.company_name }}</a>
+      <div class="nav-links">
+        <a href="{{ url_for('home') }}">Utama</a>
+        <a href="{{ url_for('packages_page') }}">Pakej</a>
+        <a href="{{ url_for('dealer_list') }}">Dealer</a>
+        {% if current_dealer %}
+          <a href="{{ url_for('dealer_dashboard') }}">Papan Pemuka</a>
+          <a href="{{ url_for('dealer_logout') }}">Log Keluar</a>
+        {% elif current_admin %}
+          <a href="{{ url_for('admin_dashboard') }}">Admin</a>
+          <a href="{{ url_for('admin_logout') }}">Log Keluar</a>
+        {% else %}
+          <a href="{{ url_for('dealer_login') }}">Log Masuk Dealer</a>
+          <a class="btn btn-primary btn-small" href="{{ url_for('dealer_register') }}">Jadi Dealer</a>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
+
+  <div class="wrap" style="padding-top:20px;">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="flash flash-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+  </div>
+
+  {% block content %}{% endblock %}
+
+  <footer>
+    <div class="wrap">
+      <strong>{{ settings.company_name }}</strong> &mdash; {{ settings.company_tagline }}<br>
+      Tel/WhatsApp: {{ settings.company_phone }} &nbsp;|&nbsp; E-mel: {{ settings.company_email }}<br>
+      <span class="small">Laman ini bukan laman rasmi Tunetalk Sdn Bhd &mdash; ia adalah laman rangkaian dealer yang diselenggara secara persendirian.</span>
+    </div>
+  </footer>
+</body>
+</html>
